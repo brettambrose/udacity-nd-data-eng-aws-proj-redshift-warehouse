@@ -1,9 +1,14 @@
 import boto3
 import configparser
 import os
+import sys
 
+sys.path.append(os.getcwd())
+from util.config_functions import modify_config_file
+
+main_config_path = "dwh.cfg"
 main_config = configparser.ConfigParser()
-main_config.read("dwh.cfg")
+main_config.read(main_config_path)
 
 aws_creds_path = os.path.expanduser("~\\.aws\\credentials")
 aws_creds = configparser.ConfigParser()
@@ -71,5 +76,23 @@ print("Deleting IAM Role")
 try:
     iam_client.delete_role(RoleName=IAM_ROLE_NAME)
 
+except Exception as e:
+    print(e)
+
+print("**********************************************")
+print("Removing Cluster endpoint to dwh.cfg file...")
+
+main_config_section = "DB"
+main_config_key = "DB_HOST"
+
+try:
+    modify_config_file (
+        config_file=main_config_path,
+        config_obj=main_config,
+        config_section=main_config_section,
+        config_key=main_config_key,
+        config_val=""
+        )
+    
 except Exception as e:
     print(e)

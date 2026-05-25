@@ -151,13 +151,17 @@ print("Adding Cluster endpoint to dwh.cfg file...")
 main_config_section = "DB"
 main_config_key = "DB_HOST"
 
-modify_config_file(
-    config_file=main_config_path,
-    config_obj=main_config,
-    config_section=main_config_section,
-    config_key=main_config_key,
-    config_val=clusterHost
-)
+try:
+    modify_config_file(
+        config_file=main_config_path,
+        config_obj=main_config,
+        config_section=main_config_section,
+        config_key=main_config_key,
+        config_val=clusterHost
+        )
+    
+except Exception as e:
+    print(e)
     
 print("**********************************************")
 print("Specifying ingress rules to default sec group")
