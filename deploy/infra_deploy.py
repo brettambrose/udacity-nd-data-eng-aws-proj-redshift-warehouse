@@ -4,6 +4,7 @@ import psycopg2
 import configparser
 import os
 import sys
+import time
 
 sys.path.append(os.getcwd())
 from util.config_functions import modify_config_file
@@ -183,11 +184,15 @@ except Exception as e:
 print("**********************************************")
 print("Validating cluster availability...")
 
-try:
-    conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(clusterHost, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
-    conn.close()
+for attempt in range(10):
 
-    print("Successfully connected to cluster")
+    try:
+        conn = psycopg2.connect("host={} dbname={} user={} password={} port={} connect_timeout=60".format(clusterHost, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
+        conn.close()
 
-except Exception as e:
-    print(e)
+        print("Successfully connected to cluster")
+        break
+
+    except Exception as e:
+        print(f"Attempt {attempt+1}: {e}")
+        time.sleep(10)
