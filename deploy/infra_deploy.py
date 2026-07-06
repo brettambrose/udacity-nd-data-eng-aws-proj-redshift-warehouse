@@ -212,7 +212,7 @@ except ec2_client.exceptions.ClientError as e:
 print("**************************************************************")
 print("Validating cluster availability...")
 
-for attempt in range(10):
+for attempt in range(30):
 
     try:
         conn = psycopg2.connect("host={} dbname={} user={} password={} port={} connect_timeout=10".format(clusterHost, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
