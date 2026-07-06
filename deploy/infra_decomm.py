@@ -8,18 +8,36 @@ Imperative Provisioning Script (not IaC) providing step-by-step
  commands to spin down the AWS environment for this project
 """
 
-sys.path.append(os.getcwd())
+print("**************************************************************")
+print("Setting up module search paths and importing custom modules...")
+
+curr_folder = os.getcwd()
+
+if curr_folder in sys.path:
+    print(f"{curr_folder} already exists in module search path")
+else:
+    sys.path.append(os.getcwd())
+    print(f"{curr_folder} added to module search path")
+
+parent_folder = os.path.dirname(os.getcwd())
+
+if parent_folder in sys.path:
+    print(f"{parent_folder} already exists in module search path")
+else:
+    sys.path.append(os.path.dirname(os.getcwd()))
+    print(f"{parent_folder} added to module search path")
+
 from util.config_functions import modify_config_file
 
 main_config_path = "dwh.cfg"
 main_config = configparser.ConfigParser()
 main_config.read(main_config_path)
 
-aws_creds_path = os.path.expanduser("~\\.aws\\credentials")
+aws_creds_path = os.path.expanduser(os.path.join("~", ".aws", "credentials"))
 aws_creds = configparser.ConfigParser()
 aws_creds.read(aws_creds_path)
 
-aws_config_path = os.path.expanduser("~\\.aws\\config")
+aws_config_path = os.path.expanduser(os.path.join("~", ".aws", "config"))
 aws_config = configparser.ConfigParser()
 aws_config.read(aws_config_path)
 
