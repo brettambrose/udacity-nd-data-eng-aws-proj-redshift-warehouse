@@ -192,12 +192,15 @@ except Exception as e:
 print("**************************************************************")
 print("Specifying ingress rules to default sec group")
 
+my_ip = requests.get("https://checkip.amazonaws.com").text.strip()
+cidr = f"{my_ip}/32"
+
 try:
     group_id = ec2_client.describe_security_groups()["SecurityGroups"][0]["GroupId"]
     defaultSg = ec2.SecurityGroup(group_id)
     defaultSg.authorize_ingress(
         GroupName=defaultSg.group_name,
-        CidrIp='0.0.0.0/0',
+        CidrIp=cidr,
         IpProtocol='TCP',
         FromPort=int(DB_PORT),
         ToPort=int(DB_PORT)  
