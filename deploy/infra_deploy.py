@@ -158,18 +158,15 @@ except Exception as e:
 print("**************************************************************")
 print("Waiting for cluster availability...")
 
-while redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0]['ClusterStatus'] != 'available':
-    False
+waiter = redshift.get_waiter('cluster_available')
+waiter.wait(
+    ClusterIdentifier=CLUSTER_IDENTIFIER,
+    WaiterConfig={'Delay': 15, 'MaxAttempts': 60}  # up to 15 min
+)
 
-else:
-    while redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0]['ClusterAvailabilityStatus'] != 'Available':
-        False
-    
-    else:
-        clusterProps = redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0]
-        clusterHost = clusterProps['Endpoint']['Address']
-
-        print(f"{clusterHost} now available")
+clusterProps = redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0]
+clusterHost = clusterProps['Endpoint']['Address']
+print(f"{clusterHost} now available")
 
 print("**************************************************************")
 print("Adding Cluster endpoint to dwh.cfg file...")
