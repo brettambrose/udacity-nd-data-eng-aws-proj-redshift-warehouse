@@ -5,13 +5,33 @@ import configparser
 import os
 import sys
 import time
+import requests
 
 """
 Imperative Provisioning Script (not IaC) providing step-by-step
  commands to set up the AWS environment for this project
 """
 
-sys.path.append(os.getcwd())
+print("**************************************************************")
+print("Setting up module search paths and importing custom modules...")
+
+curr_folder = os.getcwd()
+
+if curr_folder in sys.path:
+    print(f"{curr_folder} already exists in module search path")
+else:
+    sys.path.append(os.getcwd())
+    print(f"{curr_folder} added to module search path")
+
+parent_folder = os.path.dirname(os.getcwd())
+
+if parent_folder in sys.path:
+    print(f"{parent_path} already exists in module search path")
+else:
+    sys.path.append(os.path.dirname(os.getcwd()))
+    print(f"{parent_folder} added to module search path")
+
+
 from util.config_functions import modify_config_file
 
 main_config_path = "dwh.cfg"
@@ -46,7 +66,7 @@ KEY                   = aws_creds.get("default", "aws_access_key_id")
 SECRET                = aws_creds.get("default", "aws_secret_access_key")
 REGION                = aws_config.get("default", "region")
 
-print("**********************************************")
+print("**************************************************************")
 print("Establishing boto3 resources and clients...")
 
 iam_client = boto3.client('iam',
@@ -73,7 +93,7 @@ ec2_client = boto3.client("ec2",
                           region_name=REGION
                           )
 
-print("**********************************************")
+print("**************************************************************")
 print("Creating IAM Role")
 
 try:
@@ -90,7 +110,7 @@ try:
 except Exception as e:
     print(e)
 
-print("**********************************************")
+print("**************************************************************")
 print("Updating local .aws/config file with Role ARN")
 
 aws_profile = "profile Redshift"
@@ -105,7 +125,7 @@ modify_config_file(
     config_val=role_arn
 )
 
-print("**********************************************")
+print("**************************************************************")
 print("Attaching policies to IAM Role")
 
 try:
@@ -116,7 +136,7 @@ try:
 except Exception as e:
     print(e)
 
-print("**********************************************")
+print("**************************************************************")
 print("Creating cluster...")
 
 try:
@@ -135,7 +155,7 @@ try:
 except Exception as e:
     print(e)
 
-print("**********************************************")
+print("**************************************************************")
 print("Waiting for cluster availability...")
 
 while redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0]['ClusterStatus'] != 'available':
@@ -151,7 +171,7 @@ else:
 
         print(f"{clusterHost} now available")
 
-print("**********************************************")
+print("**************************************************************")
 print("Adding Cluster endpoint to dwh.cfg file...")
 
 main_config_section = "DB"
@@ -169,7 +189,7 @@ try:
 except Exception as e:
     print(e)
     
-print("**********************************************")
+print("**************************************************************")
 print("Specifying ingress rules to default sec group")
 
 try:
@@ -186,13 +206,13 @@ try:
 except Exception as e:
     print(e)
     
-print("**********************************************")
+print("**************************************************************")
 print("Validating cluster availability...")
 
 for attempt in range(10):
 
     try:
-        conn = psycopg2.connect("host={} dbname={} user={} password={} port={} connect_timeout=60".format(clusterHost, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
+        conn = psycopg2.connect("host={} dbname={} user={} password={} port={} connect_timeout=10".format(clusterHost, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT))
         conn.close()
 
         print("Successfully connected to cluster")
