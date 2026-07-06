@@ -26,7 +26,7 @@ else:
 parent_folder = os.path.dirname(os.getcwd())
 
 if parent_folder in sys.path:
-    print(f"{parent_path} already exists in module search path")
+    print(f"{parent_folder} already exists in module search path")
 else:
     sys.path.append(os.path.dirname(os.getcwd()))
     print(f"{parent_folder} added to module search path")
