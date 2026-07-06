@@ -203,8 +203,11 @@ try:
         ToPort=int(DB_PORT)  
     )
 
-except Exception as e:
-    print(e)
+except ec2_client.exceptions.ClientError as e:
+    if "InvalidPermission.Duplicate" in str(e):
+        print("Ingress rule already exists, skipping")
+    else:
+        raise
     
 print("**************************************************************")
 print("Validating cluster availability...")
