@@ -3,6 +3,11 @@ import configparser
 import os
 import sys
 
+"""
+Imperative Provisioning Script (not IaC) providing step-by-step
+ commands to spin down the AWS environment for this project
+"""
+
 sys.path.append(os.getcwd())
 from util.config_functions import modify_config_file
 
@@ -96,3 +101,5 @@ try:
     
 except Exception as e:
     print(e)
+
+# TODO: remove role arn from aws.cfg file

@@ -6,6 +6,11 @@ import os
 import sys
 import time
 
+"""
+Imperative Provisioning Script (not IaC) providing step-by-step
+ commands to set up the AWS environment for this project
+"""
+
 sys.path.append(os.getcwd())
 from util.config_functions import modify_config_file
 
