@@ -6,33 +6,15 @@ import os
 import sys
 import time
 import requests
+from util.config_functions import modify_config_file
 
 """
 Imperative Provisioning Script (not IaC) providing step-by-step
  commands to set up the AWS environment for this project
 """
 
-print("**************************************************************")
-print("Setting up module search paths and importing custom modules...")
-
-curr_folder = os.getcwd()
-
-if curr_folder in sys.path:
-    print(f"{curr_folder} already exists in module search path")
-else:
-    sys.path.append(os.getcwd())
-    print(f"{curr_folder} added to module search path")
-
-parent_folder = os.path.dirname(os.getcwd())
-
-if parent_folder in sys.path:
-    print(f"{parent_folder} already exists in module search path")
-else:
-    sys.path.append(os.path.dirname(os.getcwd()))
-    print(f"{parent_folder} added to module search path")
 
 
-from util.config_functions import modify_config_file
 
 main_config_path = "dwh.cfg"
 main_config = configparser.ConfigParser()
