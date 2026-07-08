@@ -55,11 +55,17 @@ try:
         ClusterIdentifier=CLUSTER_IDENTIFIER,
         SkipFinalClusterSnapshot=True
         )
-    
-    print(redshift.describe_clusters(ClusterIdentifier=CLUSTER_IDENTIFIER)['Clusters'][0])
 
-except Exception as e:
-    print(e)
+    print("Waiting for cluster deletion to complete...")
+    waiter = redshift.get_waiter('cluster_deleted')
+    waiter.wait(
+        ClusterIdentifier=CLUSTER_IDENTIFIER,
+        WaiterConfig={'Delay': 15, 'MaxAttempts': 60}  # up to 15 min
+    )
+    print(f"Cluster {CLUSTER_IDENTIFIER} successfully deleted")
+
+except redshift.exceptions.ClusterNotFoundFault:
+    print(f"Cluster {CLUSTER_IDENTIFIER} does not exist, skipping deletion")
 
 print("**********************************************")
 print("Detatching IAM Role policies...")
@@ -70,8 +76,8 @@ try:
         PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
         )
 
-except Exception as e:
-    print(e)
+except iam_client.exceptions.NoSuchEntityException:
+    print(f"Role {IAM_ROLE_NAME} or policy attachment not found, skipping detach")
 
 print("**********************************************")
 print("Deleting IAM Role")
@@ -79,8 +85,11 @@ print("Deleting IAM Role")
 try:
     iam_client.delete_role(RoleName=IAM_ROLE_NAME)
 
-except Exception as e:
-    print(e)
+except iam_client.exceptions.NoSuchEntityException:
+    print(f"IAM role {IAM_ROLE_NAME} already deleted, skipping")
+except iam_client.exceptions.DeleteConflictException as e:
+    print(f"Role {IAM_ROLE_NAME} still has attached policies/resources: {e}")
+    raise
 
 print("**********************************************")
 print("Removing Cluster endpoint to dwh.cfg file...")
@@ -88,16 +97,10 @@ print("Removing Cluster endpoint to dwh.cfg file...")
 main_config_section = "DB"
 main_config_key = "DB_HOST"
 
-try:
-    modify_config_file (
-        config_file=main_config_path,
-        config_obj=main_config,
-        config_section=main_config_section,
-        config_key=main_config_key,
-        config_val=""
-        )
-    
-except Exception as e:
-    print(e)
-
-# TODO: remove role arn from aws.cfg file
+modify_config_file (
+    config_file=main_config_path,
+    config_obj=main_config,
+    config_section=main_config_section,
+    config_key=main_config_key,
+    config_val=""
+    )
