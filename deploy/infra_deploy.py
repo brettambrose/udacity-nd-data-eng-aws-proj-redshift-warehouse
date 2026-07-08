@@ -13,9 +13,6 @@ Imperative Provisioning Script (not IaC) providing step-by-step
  commands to set up the AWS environment for this project
 """
 
-
-
-
 main_config_path = "dwh.cfg"
 main_config = configparser.ConfigParser()
 main_config.read(main_config_path)
@@ -89,8 +86,8 @@ try:
                'Principal': {'Service': 'redshift.amazonaws.com'}}],
              'Version': '2012-10-17'})
     )    
-except Exception as e:
-    print(e)
+except iam_client.exceptions.EntityAlreadyExistsException:
+    print(f"IAM role {IAM_ROLE_NAME} already exists, skipping creation")
 
 print("**************************************************************")
 print("Updating local .aws/config file with Role ARN")
@@ -134,8 +131,8 @@ try:
         IamRoles=[role_arn]
     )
     
-except Exception as e:
-    print(e)
+except redshift.exceptions.ClusterAlreadyExistsFault:
+    print(f"Cluster {CLUSTER_IDENTIFIER} already exists, skipping creation")
 
 print("**************************************************************")
 print("Waiting for cluster availability...")
@@ -156,17 +153,13 @@ print("Adding Cluster endpoint to dwh.cfg file...")
 main_config_section = "DB"
 main_config_key = "DB_HOST"
 
-try:
-    modify_config_file(
-        config_file=main_config_path,
-        config_obj=main_config,
-        config_section=main_config_section,
-        config_key=main_config_key,
-        config_val=clusterHost
-        )
-    
-except Exception as e:
-    print(e)
+modify_config_file(
+    config_file=main_config_path,
+    config_obj=main_config,
+    config_section=main_config_section,
+    config_key=main_config_key,
+    config_val=clusterHost
+    )
     
 print("**************************************************************")
 print("Specifying ingress rules to default sec group")
